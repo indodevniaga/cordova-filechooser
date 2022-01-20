@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import java.io.File;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -39,10 +41,12 @@ public class FileChooser extends CordovaPlugin {
 
         // type and title should be configurable
 
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType(uri_filter);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
 
         Intent chooser = Intent.createChooser(intent, "Select File");
         cordova.startActivityForResult(this, chooser, PICK_FILE_REQUEST);
@@ -61,16 +65,13 @@ public class FileChooser extends CordovaPlugin {
             if (resultCode == Activity.RESULT_OK) {
 
                 Uri uri = data.getData();
-
                 if (uri != null) {
-
+                    File file = new File(String.valueOf(uri));
+                    file.toURI();
                     Log.w(TAG, uri.toString());
-                    callback.success(uri.toString());
-
+                    callback.success(file.toURI());
                 } else {
-
                     callback.error("File uri was null");
-
                 }
 
             } else if (resultCode == Activity.RESULT_CANCELED) {
